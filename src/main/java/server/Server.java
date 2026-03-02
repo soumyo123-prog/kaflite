@@ -7,6 +7,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 
+import constant.ErrorCodes;
 import constant.ServerConstants;
 
 public class Server {
@@ -59,6 +60,7 @@ public class Server {
           // ((bytes[6] & 255) << 8) |
           // ((bytes[7] & 255)));
 
+          int requestApiVersion = ByteBuffer.wrap(bytes).getShort(2);
           int correlationId = ByteBuffer.wrap(bytes).getInt(4); // Modern approach
 
           // DataOutputStream will do the following operations:
@@ -68,6 +70,13 @@ public class Server {
           // outputStream.write((value >> 0) & 255);
           dataOutputStream.writeInt(messageSize);
           dataOutputStream.writeInt(correlationId);
+
+          if (requestApiVersion >= ServerConstants.MIN_SUPPORTED_VERSION
+              && requestApiVersion <= ServerConstants.MAX_SUPPORTED_VERSION) {
+            dataOutputStream.writeShort(ErrorCodes.NO_ERROR.getErrorCode());
+          } else {
+            dataOutputStream.writeShort(ErrorCodes.UNSUPPORTED_VERSION.getErrorCode());
+          }
 
           dataOutputStream.flush();
         } catch (IOException e) {
