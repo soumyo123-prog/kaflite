@@ -58,10 +58,11 @@ public class Server {
         // totalRead += bytesRead;
         // }
 
-        // Modern approach:
         dataInputStream.readFully(bytes);
-
-        int correlationId = dataInputStream.readNBytes(bytes, 4, 4);
+        int correlationId = (((bytes[4] & 255) << 24) |
+            ((bytes[5] & 255) << 16) |
+            ((bytes[6] & 255) << 8) |
+            ((bytes[7] & 255)));
 
         OutputStream outputStream = this.clientSocket.getOutputStream();
         DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
