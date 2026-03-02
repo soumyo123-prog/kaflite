@@ -7,17 +7,21 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 
-import constant.ErrorCodes;
 import constant.ServerConstants;
+import model.RequestModel;
+import request.RequestHandlerManager;
 
 public class Server {
+  private RequestHandlerManager requestHandlerManager;
   private int port;
 
-  public Server(int port) {
+  public Server(RequestHandlerManager requestHandlerManager, int port) {
+    this.requestHandlerManager = requestHandlerManager;
     this.port = port;
   }
 
-  public Server() {
+  public Server(RequestHandlerManager requestHandlerManager) {
+    this.requestHandlerManager = requestHandlerManager;
     this.port = ServerConstants.DEFAULT_PORT;
   }
 
@@ -38,9 +42,11 @@ public class Server {
           // ((inputStream.read() & 255) << 8) |
           // (inputStream.read() & 255);
 
-          int requestMessageSize = dataInputStream.readInt(); // Modern approach
+          RequestModel request = new RequestModel();
 
-          byte[] bytes = new byte[requestMessageSize];
+          request.setMessageSize(dataInputStream.readInt()); // Modern approach
+
+          byte[] bytes = new byte[request.getMessageSize()];
 
           // Outdated approach containing lot of boilerplate code:
           // int totalRead = 0;
@@ -61,26 +67,19 @@ public class Server {
           // ((bytes[6] & 255) << 8) |
           // ((bytes[7] & 255)));
 
-          int correlationId = ByteBuffer.wrap(bytes).getInt(4); // Modern approach
+          request.setApiKey((int) ByteBuffer.wrap(bytes).getShort(0));
+          request.setApiVersion((int) ByteBuffer.wrap(bytes).getShort(0));
+          request.setCorrelationId(ByteBuffer.wrap(bytes).getInt(4));
+
+          requestHandlerManager.manage(request, dataOutputStream);
 
           // DataOutputStream will do the following operations:
           // outputStream.write((value >> 24) & 255);
           // outputStream.write((value >> 16) & 255);
           // outputStream.write((value >> 8) & 255);
           // outputStream.write((value >> 0) & 255);
-
-          int responseMessageSize = 2 * Integer.BYTES + 5 * Short.BYTES;
-
-          dataOutputStream.writeInt(responseMessageSize);
-          dataOutputStream.writeInt(correlationId);
-          dataOutputStream.writeShort(ErrorCodes.NO_ERROR.getErrorCode());
-          dataOutputStream.writeShort(1);
-          dataOutputStream.writeShort(18);
-          dataOutputStream.writeShort(0);
-          dataOutputStream.writeShort(4);
-          dataOutputStream.writeInt(0);
-
-          dataOutputStream.flush();
+        } catch (IllegalArgumentException e) {
+          System.out.println("Client error: " + e.getMessage());
         } catch (IOException e) {
           System.out.println("Client error: " + e.getMessage());
         }
