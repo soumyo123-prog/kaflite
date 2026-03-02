@@ -22,8 +22,8 @@ public class Main {
       OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream);
       PrintWriter outSocket = new PrintWriter(outputStreamWriter, true);
 
-      outSocket.println("00 00 00 00");
-      outSocket.println("00 00 00 07");
+      outSocket.println(0);
+      outSocket.println(7);
     } catch (IOException e) {
       System.out.println("IOException: " + e.getMessage());
     } finally {
