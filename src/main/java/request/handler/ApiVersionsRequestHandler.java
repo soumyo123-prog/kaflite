@@ -29,7 +29,7 @@ public class ApiVersionsRequestHandler implements RequestHandler {
     dataOutputStream.writeInt(2 * Integer.BYTES + 4 * Short.BYTES + 3 * Byte.BYTES);
     dataOutputStream.writeInt(request.getCorrelationId());
     dataOutputStream.writeShort(ErrorCodes.NO_ERROR.getErrorCode());
-    dataOutputStream.writeByte(1);
+    dataOutputStream.writeByte(0);
     dataOutputStream.writeShort(getApiKey());
     dataOutputStream.writeShort(MIN_SUPPORTED_VERSION);
     dataOutputStream.writeShort(MAX_SUPPORTED_VERSION);

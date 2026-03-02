@@ -68,7 +68,7 @@ public class Server {
           // ((bytes[7] & 255)));
 
           request.setApiKey((int) ByteBuffer.wrap(bytes).getShort(0));
-          request.setApiVersion((int) ByteBuffer.wrap(bytes).getShort(0));
+          request.setApiVersion((int) ByteBuffer.wrap(bytes).getShort(2));
           request.setCorrelationId(ByteBuffer.wrap(bytes).getInt(4));
 
           requestHandlerManager.manage(request, dataOutputStream);
