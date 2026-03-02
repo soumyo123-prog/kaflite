@@ -33,19 +33,20 @@ public class Server {
           // Reading the first 4 bytes (message size).
           // &255 is done to ensure that the result is a clean unsigned integer between 0
           // and 255.
-          // int messageSize = ((inputStream.read() & 255) << 24) |
+          // int requestMessageSize = ((inputStream.read() & 255) << 24) |
           // ((inputStream.read() & 255) << 16) |
           // ((inputStream.read() & 255) << 8) |
           // (inputStream.read() & 255);
 
-          int messageSize = dataInputStream.readInt(); // Modern approach
+          int requestMessageSize = dataInputStream.readInt(); // Modern approach
 
-          byte[] bytes = new byte[messageSize];
+          byte[] bytes = new byte[requestMessageSize];
 
           // Outdated approach containing lot of boilerplate code:
           // int totalRead = 0;
-          // while (totalRead < messageSize) {
-          // int bytesRead = inputStream.read(bytes, totalRead, messageSize - totalRead);
+          // while (totalRead < requestMessageSize) {
+          // int bytesRead = inputStream.read(bytes, totalRead, requestMessageSize -
+          // totalRead);
           // if (bytesRead == -1) {
           // break;
           // }
@@ -60,7 +61,6 @@ public class Server {
           // ((bytes[6] & 255) << 8) |
           // ((bytes[7] & 255)));
 
-          int requestApiVersion = ByteBuffer.wrap(bytes).getShort(2);
           int correlationId = ByteBuffer.wrap(bytes).getInt(4); // Modern approach
 
           // DataOutputStream will do the following operations:
@@ -68,15 +68,17 @@ public class Server {
           // outputStream.write((value >> 16) & 255);
           // outputStream.write((value >> 8) & 255);
           // outputStream.write((value >> 0) & 255);
-          dataOutputStream.writeInt(messageSize);
-          dataOutputStream.writeInt(correlationId);
 
-          if (requestApiVersion >= ServerConstants.MIN_SUPPORTED_VERSION
-              && requestApiVersion <= ServerConstants.MAX_SUPPORTED_VERSION) {
-            dataOutputStream.writeShort(ErrorCodes.NO_ERROR.getErrorCode());
-          } else {
-            dataOutputStream.writeShort(ErrorCodes.UNSUPPORTED_VERSION.getErrorCode());
-          }
+          int responseMessageSize = 2 * Integer.BYTES + 5 * Short.BYTES;
+
+          dataOutputStream.writeInt(responseMessageSize);
+          dataOutputStream.writeInt(correlationId);
+          dataOutputStream.writeShort(ErrorCodes.NO_ERROR.getErrorCode());
+          dataOutputStream.writeShort(1);
+          dataOutputStream.writeShort(18);
+          dataOutputStream.writeShort(0);
+          dataOutputStream.writeShort(4);
+          dataOutputStream.writeInt(0);
 
           dataOutputStream.flush();
         } catch (IOException e) {
