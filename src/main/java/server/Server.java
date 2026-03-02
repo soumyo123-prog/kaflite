@@ -59,16 +59,15 @@ public class Server {
         // }
 
         // Modern approach:
-        inputStream.reset();
         dataInputStream.readFully(bytes);
 
         OutputStream outputStream = this.clientSocket.getOutputStream();
         DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
 
-        dataOutputStream.writeByte(bytes[8]);
-        dataOutputStream.writeByte(bytes[9]);
-        dataOutputStream.writeByte(bytes[10]);
-        dataOutputStream.writeByte(bytes[11]);
+        dataOutputStream.writeByte(bytes[4]);
+        dataOutputStream.writeByte(bytes[5]);
+        dataOutputStream.writeByte(bytes[6]);
+        dataOutputStream.writeByte(bytes[7]);
 
         dataOutputStream.writeInt(messageSize);
 
