@@ -1,5 +1,6 @@
 package server;
 
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,23 +26,53 @@ public class Server {
     try {
       this.serverSocket = new ServerSocket(port);
       this.serverSocket.setReuseAddress(true);
-      this.clientSocket = this.serverSocket.accept();
 
-      InputStream inputStream = this.clientSocket.getInputStream();
+      while (true) {
+        this.clientSocket = this.serverSocket.accept();
 
-      byte[] bytes = inputStream.readAllBytes();
+        InputStream inputStream = this.clientSocket.getInputStream();
+        DataInputStream dataInputStream = new DataInputStream(inputStream);
 
-      System.out.println("Byte array size: " + bytes.length);
+        // Reading the first 4 bytes (message size).
+        // &255 is done to ensure that the result is a clean unsigned integer between 0
+        // and 255.
+        // int messageSize = ((inputStream.read() & 255) << 24) |
+        // ((inputStream.read() & 255) << 16) |
+        // ((inputStream.read() & 255) << 8) |
+        // (inputStream.read() & 255);
 
-      OutputStream outputStream = this.clientSocket.getOutputStream();
-      DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
+        int messageSize = dataInputStream.readInt();
 
-      dataOutputStream.writeByte(bytes[4]);
-      dataOutputStream.writeByte(bytes[5]);
-      dataOutputStream.writeByte(bytes[6]);
-      dataOutputStream.writeByte(bytes[7]);
+        // Not using readAllBytes because it is blocking and waits till end of input.
+        // byte[] bytes = inputStream.readAllBytes();
 
-      dataOutputStream.flush();
+        byte[] bytes = new byte[messageSize];
+
+        // Outdated approach containing lot of boilerplate code:
+        // int totalRead = 0;
+        // while (totalRead < messageSize) {
+        // int bytesRead = inputStream.read(bytes, totalRead, messageSize - totalRead);
+        // if (bytesRead == -1) {
+        // break;
+        // }
+        // totalRead += bytesRead;
+        // }
+
+        // Modern approach:
+        dataInputStream.readFully(bytes);
+
+        OutputStream outputStream = this.clientSocket.getOutputStream();
+        DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
+
+        dataOutputStream.writeByte(bytes[8]);
+        dataOutputStream.writeByte(bytes[9]);
+        dataOutputStream.writeByte(bytes[10]);
+        dataOutputStream.writeByte(bytes[11]);
+
+        dataOutputStream.writeInt(messageSize);
+
+        dataOutputStream.flush();
+      }
     } catch (IOException e) {
       System.out.println("IOException: " + e.getMessage());
     } finally {
