@@ -1,4 +1,10 @@
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -11,6 +17,13 @@ public class Main {
       serverSocket = new ServerSocket(port);
       serverSocket.setReuseAddress(true);
       clientSocket = serverSocket.accept();
+
+      OutputStream outputStream = clientSocket.getOutputStream();
+      OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream);
+      PrintWriter outSocket = new PrintWriter(outputStreamWriter, true);
+
+      outSocket.println("00 00 00 00");
+      outSocket.println("00 00 00 07");
     } catch (IOException e) {
       System.out.println("IOException: " + e.getMessage());
     } finally {
