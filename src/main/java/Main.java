@@ -24,15 +24,14 @@ public class Main {
 
       OutputStream outputStream = clientSocket.getOutputStream();
       OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream);
-      PrintWriter outSocket = new PrintWriter(outputStreamWriter, true);
 
       System.out.println("Client says: " + inSocket.readLine());
 
       int messageSize = 0;
       int correlationId = 7;
 
-      outSocket.println(messageSize);
-      outSocket.println(correlationId);
+      outputStream.write(messageSize);
+      outputStream.write(correlationId);
     } catch (IOException e) {
       System.out.println("IOException: " + e.getMessage());
     } finally {
