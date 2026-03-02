@@ -18,12 +18,21 @@ public class Main {
       serverSocket.setReuseAddress(true);
       clientSocket = serverSocket.accept();
 
+      InputStream inputStream = clientSocket.getInputStream();
+      InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+      BufferedReader inSocket = new BufferedReader(inputStreamReader);
+
       OutputStream outputStream = clientSocket.getOutputStream();
       OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream);
       PrintWriter outSocket = new PrintWriter(outputStreamWriter, true);
 
-      outSocket.println(0);
-      outSocket.println(7);
+      System.out.println("Client says: " + inSocket.readLine());
+
+      int messageSize = 0;
+      int correlationId = 7;
+
+      outSocket.println(messageSize);
+      outSocket.println(correlationId);
     } catch (IOException e) {
       System.out.println("IOException: " + e.getMessage());
     } finally {
