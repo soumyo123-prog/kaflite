@@ -61,15 +61,13 @@ public class Server {
         // Modern approach:
         dataInputStream.readFully(bytes);
 
+        int correlationId = dataInputStream.readNBytes(bytes, 4, 4);
+
         OutputStream outputStream = this.clientSocket.getOutputStream();
         DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
 
-        dataOutputStream.writeByte(bytes[4]);
-        dataOutputStream.writeByte(bytes[5]);
-        dataOutputStream.writeByte(bytes[6]);
-        dataOutputStream.writeByte(bytes[7]);
-
         dataOutputStream.writeInt(messageSize);
+        dataOutputStream.writeInt(correlationId);
 
         dataOutputStream.flush();
       }
