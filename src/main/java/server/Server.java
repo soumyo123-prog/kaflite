@@ -59,6 +59,7 @@ public class Server {
         // }
 
         // Modern approach:
+        inputStream.reset();
         dataInputStream.readFully(bytes);
 
         OutputStream outputStream = this.clientSocket.getOutputStream();
