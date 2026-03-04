@@ -33,9 +33,9 @@ public class ApiVersionsRequestHandler implements RequestHandler {
     apiVersionsResponse.setCorrelationId(request.getCorrelationId());
     apiVersionsResponse.setErrorCode(ErrorCodes.NO_ERROR.getErrorCode());
     apiVersionsResponse.addApiKey(getApiKey(), ServerConstants.MIN_SUPPORTED_VERSION,
-        ServerConstants.MIN_SUPPORTED_VERSION, (byte) 0);
+        ServerConstants.MAX_SUPPORTED_VERSION, (byte) 0);
     apiVersionsResponse.addApiKey(getApiKey(), ServerConstants.MIN_SUPPORTED_VERSION,
-        ServerConstants.MIN_SUPPORTED_VERSION, (byte) 0);
+        ServerConstants.MAX_SUPPORTED_VERSION, (byte) 0);
     apiVersionsResponse.setEncodedLength(EncodingDecodingUtil.encodeToVarint(apiVersionsResponse.getLength() + 1));
     apiVersionsResponse.setThrottleTime(0);
     apiVersionsResponse.setTagBuffer((byte) 0);
