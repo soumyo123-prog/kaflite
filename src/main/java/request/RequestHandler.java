@@ -8,5 +8,5 @@ import model.RequestModel;
 public interface RequestHandler {
   public void handle(RequestModel request, DataOutputStream dataOutputStream) throws IOException;
 
-  public Integer getApiKey();
+  public Short getApiKey();
 }
