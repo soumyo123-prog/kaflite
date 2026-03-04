@@ -1,13 +1,15 @@
 package request.handler;
 
-import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 import constant.ErrorCodes;
 import constant.ServerConstants;
 import model.RequestModel;
+import model.apiversions.ApiKeyModel;
+import model.apiversions.ApiVersionsResponseModel;
 import request.RequestHandler;
+import utils.EncodingDecodingUtil;
 
 public class ApiVersionsRequestHandler implements RequestHandler {
   @Override
@@ -26,69 +28,39 @@ public class ApiVersionsRequestHandler implements RequestHandler {
       return;
     }
 
-    int messageSize = 0;
+    ApiVersionsResponseModel apiVersionsResponse = new ApiVersionsResponseModel();
 
-    int correlationId = request.getCorrelationId();
-    messageSize += Integer.BYTES;
+    apiVersionsResponse.setCorrelationId(request.getCorrelationId());
+    apiVersionsResponse.setErrorCode(ErrorCodes.NO_ERROR.getErrorCode());
+    apiVersionsResponse.addApiKey(getApiKey(), ServerConstants.MIN_SUPPORTED_VERSION,
+        ServerConstants.MIN_SUPPORTED_VERSION, (byte) 0);
+    apiVersionsResponse.addApiKey(getApiKey(), ServerConstants.MIN_SUPPORTED_VERSION,
+        ServerConstants.MIN_SUPPORTED_VERSION, (byte) 0);
+    apiVersionsResponse.setEncodedLength(EncodingDecodingUtil.encodeToVarint(apiVersionsResponse.getLength() + 1));
+    apiVersionsResponse.setThrottleTime(0);
+    apiVersionsResponse.setTagBuffer((byte) 0);
 
-    short errorCode = ErrorCodes.NO_ERROR.getErrorCode();
-    messageSize += Short.BYTES;
-
-    int length = 2;
-    byte[] lengthVarint = encodeToVarint(length);
-    messageSize += Byte.BYTES * lengthVarint.length;
-
-    short apiKey = getApiKey();
-    messageSize += Short.BYTES;
-
-    short minSupportedVersion = ServerConstants.MIN_SUPPORTED_VERSION;
-    messageSize += Short.BYTES;
-
-    short maxSupportedVersion = ServerConstants.MAX_SUPPORTED_VERSION;
-    messageSize += Short.BYTES;
-
-    byte arrTagBuffer = 0;
-    messageSize += Byte.BYTES;
-
-    int throttleTime = 0;
-    messageSize += Byte.BYTES;
-
-    byte tagBuffer = 0;
-    messageSize += Byte.BYTES;
+    int messageSize = apiVersionsResponse.getSize();
 
     dataOutputStream.writeInt(messageSize);
-    dataOutputStream.writeInt(correlationId);
-    dataOutputStream.writeShort(errorCode);
-
-    for (byte i : lengthVarint) {
-      dataOutputStream.writeByte(i);
-    }
-
-    dataOutputStream.writeShort(apiKey);
-    dataOutputStream.writeShort(minSupportedVersion);
-    dataOutputStream.writeShort(maxSupportedVersion);
-    dataOutputStream.writeByte(arrTagBuffer);
-    dataOutputStream.writeInt(throttleTime);
-    dataOutputStream.writeByte(tagBuffer);
-
+    writeResponseToDataOutputStream(apiVersionsResponse, dataOutputStream);
     dataOutputStream.flush();
   }
 
-  private byte[] encodeToVarint(int value) {
-    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-
-    int curr;
-
-    while ((value & ServerConstants.REMOVE_FIRST_SEVEN_BITS) != 0) {
-      curr = (value & ServerConstants.TAKE_FIRST_SEVEN_BITS) | ServerConstants.MARK_CONTINUATION_BIT;
-      bos.write(curr);
-      value = value >> 7;
+  private void writeResponseToDataOutputStream(ApiVersionsResponseModel response, DataOutputStream dataOutputStream)
+      throws IOException {
+    dataOutputStream.writeInt(response.getCorrelationId());
+    dataOutputStream.writeShort(response.getErrorCode());
+    for (byte i : response.getVarintEncodedLength()) {
+      dataOutputStream.writeByte(i);
     }
-
-    curr = value & ServerConstants.TAKE_FIRST_SEVEN_BITS;
-    bos.write(curr);
-
-    return bos.toByteArray();
+    for (ApiKeyModel apiKeyModel : response.getApiKeys()) {
+      dataOutputStream.writeShort(apiKeyModel.getApiKey());
+      dataOutputStream.writeShort(apiKeyModel.getMinVersion());
+      dataOutputStream.writeShort(apiKeyModel.getMaxVersion());
+      dataOutputStream.writeByte(apiKeyModel.getTagBuffer());
+    }
+    dataOutputStream.writeInt(response.getThrottleTime());
+    dataOutputStream.writeByte(response.getTagBuffer());
   }
-
 }
