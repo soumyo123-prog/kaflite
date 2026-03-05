@@ -8,4 +8,6 @@ public class ServerConstants {
   public static final Integer REMOVE_FIRST_SEVEN_BITS = 0xFFFFFF80;
   public static final Integer TAKE_FIRST_SEVEN_BITS = 0x7F;
   public static final Integer MARK_CONTINUATION_BIT = 0x80;
+  public static final Runnable POISON_PILL = () -> {
+  };
 }

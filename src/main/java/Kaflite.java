@@ -1,8 +1,15 @@
 import request.RequestHandlerManager;
-import server.Server;
+import server.ServerMain;
 
 public class Kaflite {
   public static void main(String[] args) {
-    new Server(new RequestHandlerManager(), 9092).start();
+    ServerMain server = new ServerMain(new RequestHandlerManager(), 9092);
+
+    Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+      System.out.println("Shutdown signal received...");
+      server.stop();
+    }));
+
+    server.start();
   }
 }
