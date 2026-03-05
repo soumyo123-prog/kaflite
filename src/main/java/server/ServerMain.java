@@ -10,6 +10,7 @@ import request.RequestHandlerManager;
 public class ServerMain {
   private RequestHandlerManager requestHandlerManager;
   private ServerSocket serverSocket;
+  private ServerThreadPool threadPool;
   private int port;
   private volatile boolean running;
 
@@ -31,6 +32,7 @@ public class ServerMain {
       this.serverSocket.setReuseAddress(true);
 
       ServerThreadPool serverThreadPool = new ServerThreadPool(50);
+      this.threadPool = serverThreadPool;
 
       while (this.running) {
         Socket clientSocket = this.serverSocket.accept();
@@ -40,6 +42,7 @@ public class ServerMain {
       System.out.println("Server error: " + e.getMessage());
     } finally {
       this.running = false;
+      threadPool.shutdown();
     }
   }
 
