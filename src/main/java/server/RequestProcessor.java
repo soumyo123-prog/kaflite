@@ -10,11 +10,11 @@ import java.nio.ByteBuffer;
 import model.RequestModel;
 import request.RequestHandlerManager;
 
-public class ServerRunnable implements Runnable {
+public class RequestProcessor implements Runnable {
   private Socket clientSocket;
   private RequestHandlerManager requestHandlerManager;
 
-  public ServerRunnable(Socket clientSocket, RequestHandlerManager requestHandlerManager) {
+  public RequestProcessor(Socket clientSocket, RequestHandlerManager requestHandlerManager) {
     this.clientSocket = clientSocket;
     this.requestHandlerManager = requestHandlerManager;
   }

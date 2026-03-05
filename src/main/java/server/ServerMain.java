@@ -36,7 +36,7 @@ public class ServerMain {
 
       while (this.running) {
         Socket clientSocket = this.serverSocket.accept();
-        serverThreadPool.submit(new ServerRunnable(clientSocket, requestHandlerManager));
+        serverThreadPool.submit(new RequestProcessor(clientSocket, requestHandlerManager));
       }
     } catch (IOException e) {
       System.out.println("Server error: " + e.getMessage());
