@@ -2,6 +2,7 @@ package server;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -69,7 +70,9 @@ public class ServerRunnable implements Runnable {
       // outputStream.write((value >> 8) & 255);
       // outputStream.write((value >> 0) & 255);
     } catch (IllegalArgumentException e) {
-      System.out.println("Client error: " + e.getMessage());
+      System.out.println("Error in processing the request: " + e.getMessage());
+    } catch (EOFException e) {
+      System.out.println("Client closed the connection abruptly.");
     } catch (IOException e) {
       System.out.println("Client error: " + e.getMessage());
     } finally {
