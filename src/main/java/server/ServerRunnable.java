@@ -22,6 +22,7 @@ public class ServerRunnable implements Runnable {
   @Override
   public void run() {
     try {
+      System.out.println("DEBUG: Started processing request from " + clientSocket.getPort());
       DataInputStream dataInputStream = new DataInputStream(clientSocket.getInputStream());
       DataOutputStream dataOutputStream = new DataOutputStream(clientSocket.getOutputStream());
 
@@ -69,6 +70,7 @@ public class ServerRunnable implements Runnable {
       // outputStream.write((value >> 16) & 255);
       // outputStream.write((value >> 8) & 255);
       // outputStream.write((value >> 0) & 255);
+      System.out.println("DEBUG: Finished processing request from " + clientSocket.getPort());
     } catch (IllegalArgumentException e) {
       System.out.println("Error in processing the request: " + e.getMessage());
     } catch (EOFException e) {
