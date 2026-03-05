@@ -22,55 +22,24 @@ public class ServerRunnable implements Runnable {
   @Override
   public void run() {
     try {
-      System.out.println("DEBUG: Started processing request from " + clientSocket.getPort());
       DataInputStream dataInputStream = new DataInputStream(clientSocket.getInputStream());
       DataOutputStream dataOutputStream = new DataOutputStream(clientSocket.getOutputStream());
 
-      // Reading the first 4 bytes (message size).
-      // &255 is done to ensure that the result is a clean unsigned integer between 0
-      // and 255.
-      // int requestMessageSize = ((inputStream.read() & 255) << 24) |
-      // ((inputStream.read() & 255) << 16) |
-      // ((inputStream.read() & 255) << 8) |
-      // (inputStream.read() & 255);
+      while (!clientSocket.isClosed()) {
+        RequestModel request = new RequestModel();
 
-      RequestModel request = new RequestModel();
+        request.setMessageSize(dataInputStream.readInt());
 
-      request.setMessageSize(dataInputStream.readInt()); // Modern approach
+        byte[] bytes = new byte[request.getMessageSize()];
 
-      byte[] bytes = new byte[request.getMessageSize()];
+        dataInputStream.readFully(bytes);
 
-      // Outdated approach containing lot of boilerplate code:
-      // int totalRead = 0;
-      // while (totalRead < requestMessageSize) {
-      // int bytesRead = inputStream.read(bytes, totalRead, requestMessageSize -
-      // totalRead);
-      // if (bytesRead == -1) {
-      // break;
-      // }
-      // totalRead += bytesRead;
-      // }
+        request.setApiKey((int) ByteBuffer.wrap(bytes).getShort(0));
+        request.setApiVersion((int) ByteBuffer.wrap(bytes).getShort(2));
+        request.setCorrelationId(ByteBuffer.wrap(bytes).getInt(4));
 
-      dataInputStream.readFully(bytes); // Modern approach
-
-      // Outdated approach (prone to error)
-      // int correlationId = (((bytes[4] & 255) << 24) |
-      // ((bytes[5] & 255) << 16) |
-      // ((bytes[6] & 255) << 8) |
-      // ((bytes[7] & 255)));
-
-      request.setApiKey((int) ByteBuffer.wrap(bytes).getShort(0));
-      request.setApiVersion((int) ByteBuffer.wrap(bytes).getShort(2));
-      request.setCorrelationId(ByteBuffer.wrap(bytes).getInt(4));
-
-      requestHandlerManager.manage(request, dataOutputStream);
-
-      // DataOutputStream will do the following operations:
-      // outputStream.write((value >> 24) & 255);
-      // outputStream.write((value >> 16) & 255);
-      // outputStream.write((value >> 8) & 255);
-      // outputStream.write((value >> 0) & 255);
-      System.out.println("DEBUG: Finished processing request from " + clientSocket.getPort());
+        requestHandlerManager.manage(request, dataOutputStream);
+      }
     } catch (IllegalArgumentException e) {
       System.out.println("Error in processing the request: " + e.getMessage());
     } catch (EOFException e) {
@@ -86,3 +55,34 @@ public class ServerRunnable implements Runnable {
     }
   }
 }
+
+// Reading the first 4 bytes (message size).
+// &255 is done to ensure that the result is a clean unsigned integer between 0
+// and 255.
+// int requestMessageSize = ((inputStream.read() & 255) << 24) |
+// ((inputStream.read() & 255) << 16) |
+// ((inputStream.read() & 255) << 8) |
+// (inputStream.read() & 255);
+
+// Outdated approach containing lot of boilerplate code:
+// int totalRead = 0;
+// while (totalRead < requestMessageSize) {
+// int bytesRead = inputStream.read(bytes, totalRead, requestMessageSize -
+// totalRead);
+// if (bytesRead == -1) {
+// break;
+// }
+// totalRead += bytesRead;
+// }
+
+// Outdated approach (prone to error)
+// int correlationId = (((bytes[4] & 255) << 24) |
+// ((bytes[5] & 255) << 16) |
+// ((bytes[6] & 255) << 8) |
+// ((bytes[7] & 255)));
+
+// DataOutputStream will do the following operations:
+// outputStream.write((value >> 24) & 255);
+// outputStream.write((value >> 16) & 255);
+// outputStream.write((value >> 8) & 255);
+// outputStream.write((value >> 0) & 255);

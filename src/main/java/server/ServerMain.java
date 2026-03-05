@@ -46,14 +46,14 @@ public class ServerMain {
     }
   }
 
-  // public void stop() {
-  // this.running = false;
-  // try {
-  // if (serverSocket != null) {
-  // serverSocket.close();
-  // }
-  // } catch (IOException e) {
-  // System.err.println("Error while closing server: " + e.getMessage());
-  // }
-  // }
+  public void stop() {
+    this.running = false;
+    try {
+      if (serverSocket != null) {
+        serverSocket.close();
+      }
+    } catch (IOException e) {
+      System.err.println("Error while closing server: " + e.getMessage());
+    }
+  }
 }
